@@ -1,0 +1,4 @@
+;; Copy this to .dir-locals.el for project-specific emacs settings.
+;; Tweak if needed.
+((nil . ((cider-preferred-build-tool . clojure-cli)
+         (cider-clojure-cli-aliases . ":dev:test"))))
