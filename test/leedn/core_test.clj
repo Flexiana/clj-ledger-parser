@@ -1,6 +1,6 @@
 (ns leedn.leedn-test
   (:require [clojure.test :refer :all]
-            [leedn.leedn :refer :all]))
+            [leedn.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
