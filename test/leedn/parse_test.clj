@@ -2,6 +2,7 @@
   (:require
    [clj-time.core :as time]
    [clojure.test :refer :all]
+   [matcher-combinators.test]
    [finance.core.types :as types]
    [leedn.parse :as parse]))
 
@@ -17,7 +18,7 @@
   well."
   [text & values]
   (let [text (str text "\n")]
-    (is (= values (parse/parse-group text))
+    (is (match? values (parse/parse-group text))
         #_(doseq [entry values] ;; TODO: add malli check
             (when-let [spec (s/get-spec (:data/type entry))]
               (when-not (s/valid? spec entry)
@@ -102,10 +103,10 @@
      :entry/account ["Expenses" "Waves"],
      :posting/amount {:value 3333M, :commodity 'USD},
      :posting/payee "Juan Taylor",
-     :time/at (time/local-date 2016 4 10)}
+     :time/at (local-dt 2016 4 10)}
     {:data/type :entry/posting,
      :entry/account ["Assets" "Cash"],
-     :time/at (time/local-date 2016 4 10)}]})
+     :time/at (local-dt 2016 4 10)}]})
 
 (deftest transaction-parsing
   (test-parse
@@ -313,8 +314,10 @@
                      :date (time/local-date 2016 1 5)}
       :posting/price (types/q 40.1513M 'USD)
       :time/at (local-dt 2016 4 22)}]})
-  #_(test-parse "2016-04-22 * Paid wages
-    Expenses:Waves  3333 USD
+  (test-parse
+   "2016-04-10 * Paid wages
+    Expenses:Waves  3333 USD  ; Payee: Juan Taylor
     Assets:Cash"
-                (assoc-in tx-expected [:tx/entries first :posting/payee] "Juan Taylor")
-                "posting payee"))
+   (assoc-in tx-expected [:tx/entries 0 :posting/payee] "Juan Taylor")))
+
+
