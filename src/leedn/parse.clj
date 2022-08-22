@@ -247,22 +247,22 @@
    (fn ->transaction
      [date & children]
      (-> {:data/type :finance/transaction
-          :transaction/date date}
+          :tx/date date}
          (collect
           {:title                       (collect-one :TxMemo)
            :description                 (collect-all :MetaComment)
            :time/at                     (collect-one :TimeMeta)
-           :transaction/flag    (collect-one :TxFlag)
-           :transaction/code    (collect-one :TxCode)
-           :transaction/entries (collect-all :Posting)
+           :tx/flag    (collect-one :TxFlag)
+           :tx/code    (collect-one :TxCode)
+           :tx/entries (collect-all :Posting)
            :data/tags                   (collect-map :MetaEntry)}
           children)
          (join-field :description "\n")
-         (update :transaction/entries vec)
-         (update-time :time/at :transaction/date)
+         (update :tx/entries vec)
+         (update-time :time/at :tx/date)
          (lift-meta :UUID :data/ident (partial str "finance:transaction:"))
-         (lift-meta :link :transaction/links hash-set)
-         (distribute-attr :time/at :transaction/entries)
+         (lift-meta :link :tx/links hash-set)
+         (distribute-attr :time/at :tx/entries)
          (dissoc :time/at)))
 
    :TxFlag
@@ -293,7 +293,7 @@
            :posting/invoice    (collect-all :LineItem)
            ::lot-cost                  (collect-one :PostingLotCost)
            ::lot-date                  (collect-one :PostingLotDate)
-           ::date                      (collect-one :PostingDate)
+           ::date                      (collect-one :PostingDate) ;; TODO: aux date
            :time/at                    (collect-one :TimeMeta)
            :data/tags                  (collect-map :MetaEntry)
            :description                (collect-all :MetaComment)}

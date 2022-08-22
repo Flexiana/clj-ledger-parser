@@ -17,16 +17,14 @@
   well."
   [text & values]
   (let [text (str text "\n")]
-    (is (= values (parse/parse-group text))))
-  #_(doseq [entry values] ;; TODO: add malli check
-      (when-let [spec (s/get-spec (:data/type entry))]
-        (when-not (s/valid? spec entry)
-          (throw (ex-info (s/explain-str spec entry)
-                          {:spec spec, :entry entry}))))))
-
-(comment
-
-  (parse/parse-group "commodity FOO\n"))
+    (is (= values (parse/parse-group text))
+        #_(doseq [entry values] ;; TODO: add malli check
+            (when-let [spec (s/get-spec (:data/type entry))]
+              (when-not (s/valid? spec entry)
+                (throw (ex-info (s/explain-str spec entry)
+                                {:spec spec, :entry entry})))))
+  ;-)
+        )))
 
 (deftest commodity-declarations
   (test-parse
@@ -94,6 +92,21 @@
     :account/external-id "XX01-13924280"
     :account/links #{"d2df7edb50a138cc753e60ce4bb0beb9"}}))
 
+(def tx-expected
+  {:data/type :finance/transaction,
+   :tx/date (time/local-date 2016 4 10)
+   :title "Paid wages",
+   :tx/flag :cleared,
+   :tx/entries
+   [{:data/type :entry/posting,
+     :entry/account ["Expenses" "Waves"],
+     :posting/amount {:value 3333M, :commodity 'USD},
+     :posting/payee "Juan Taylor",
+     :time/at (time/local-date 2016 4 10)}
+    {:data/type :entry/posting,
+     :entry/account ["Assets" "Cash"],
+     :time/at (time/local-date 2016 4 10)}]})
+
 (deftest transaction-parsing
   (test-parse
    "2009-08-01 * Opening Balance
@@ -101,15 +114,15 @@
     Equity:Opening Balances"
    {:title "Opening Balance"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2009 8 1)
-    :transaction/flag :cleared
-    :transaction/entries [{:data/type :entry/posting
-                           :entry/account :wallet
-                           :posting/amount (types/q 20.00M 'USD)
-                           :time/at (local-dt 2009 8 1)}
-                          {:data/type :entry/posting
-                           :entry/account ["Equity" "Opening Balances"]
-                           :time/at (local-dt 2009 8 1)}]})
+    :tx/date (time/local-date 2009 8 1)
+    :tx/flag :cleared
+    :tx/entries [{:data/type :entry/posting
+                  :entry/account :wallet
+                  :posting/amount (types/q 20.00M 'USD)
+                  :time/at (local-dt 2009 8 1)}
+                 {:data/type :entry/posting
+                  :entry/account ["Equity" "Opening Balances"]
+                  :time/at (local-dt 2009 8 1)}]})
   (test-parse
    "2010-08-05 * Opened Account
     ; :estimate:
@@ -118,21 +131,21 @@
    {:title "Opened Account"
     :data/type :finance/transaction
     :data/tags {:estimate true}
-    :transaction/date (time/local-date 2010 8 5)
-    :transaction/flag :cleared
-    :transaction/entries [{:data/type :entry/open-account
-                           :entry/account :ally-savings
-                           :time/at (local-dt 2010 8 5)}]})
+    :tx/date (time/local-date 2010 8 5)
+    :tx/flag :cleared
+    :tx/entries [{:data/type :entry/open-account
+                  :entry/account :ally-savings
+                  :time/at (local-dt 2010 8 5)}]})
   (test-parse
    "2013-12-07 Balance Assertions
     [apple-checking]                          0 = $120.00"
    {:title "Balance Assertions"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2013 12 7)
-    :transaction/entries [{:data/type :entry/balance-check
-                           :entry/account :apple-checking
-                           :balance/amount (types/q 120.00M 'USD)
-                           :time/at (local-dt 2013 12 7)}]})
+    :tx/date (time/local-date 2013 12 7)
+    :tx/entries [{:data/type :entry/balance-check
+                  :entry/account :apple-checking
+                  :balance/amount (types/q 120.00M 'USD)
+                  :time/at (local-dt 2013 12 7)}]})
   (test-parse
    "2016-04-16 ! Uber
     ; time: 14:03
@@ -140,15 +153,15 @@
     credit-card"
    {:title "Uber"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2016 4 16)
-    :transaction/flag :pending
-    :transaction/entries [{:data/type :entry/posting
-                           :entry/account ["Expenses" "Transit" "Taxi"]
-                           :posting/amount (types/q 8.19M 'USD)
-                           :time/at (local-dt 2016 4 16 14 3)}
-                          {:data/type :entry/posting
-                           :entry/account :credit-card
-                           :time/at (local-dt 2016 4 16 14 3)}]})
+    :tx/date (time/local-date 2016 4 16)
+    :tx/flag :pending
+    :tx/entries [{:data/type :entry/posting
+                  :entry/account ["Expenses" "Transit" "Taxi"]
+                  :posting/amount (types/q 8.19M 'USD)
+                  :time/at (local-dt 2016 4 16 14 3)}
+                 {:data/type :entry/posting
+                  :entry/account :credit-card
+                  :time/at (local-dt 2016 4 16 14 3)}]})
   (test-parse
    "2014-01-04 * Food Kiosk
     ; time: 06:50:21 US/Eastern
@@ -156,19 +169,19 @@
     credit-card"
    {:title "Food Kiosk"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2014 1 4)
-    :transaction/flag :cleared
-    :transaction/entries [{:data/type :entry/posting
-                           :entry/account ["Expenses" "Food" "Fast Food"]
-                           :posting/amount (types/q 7.03M 'USD)
-                           :time/at (time/from-time-zone
-                                     (time/date-time 2014 1 4 6 50 21)
-                                     (time/time-zone-for-id "US/Eastern"))}
-                          {:data/type :entry/posting
-                           :entry/account :credit-card
-                           :time/at (time/from-time-zone
-                                     (time/date-time 2014 1 4 6 50 21)
-                                     (time/time-zone-for-id "US/Eastern"))}]})
+    :tx/date (time/local-date 2014 1 4)
+    :tx/flag :cleared
+    :tx/entries [{:data/type :entry/posting
+                  :entry/account ["Expenses" "Food" "Fast Food"]
+                  :posting/amount (types/q 7.03M 'USD)
+                  :time/at (time/from-time-zone
+                            (time/date-time 2014 1 4 6 50 21)
+                            (time/time-zone-for-id "US/Eastern"))}
+                 {:data/type :entry/posting
+                  :entry/account :credit-card
+                  :time/at (time/from-time-zone
+                            (time/date-time 2014 1 4 6 50 21)
+                            (time/time-zone-for-id "US/Eastern"))}]})
   (test-parse
    "2016-04-12 ! Cloudlift Cellars
     ; UUID: 62a367f0f26938b6aae1b961d1c130b9
@@ -184,9 +197,9 @@
     :description "Spring wine club."
     :data/ident "finance:transaction:62a367f0f26938b6aae1b961d1c130b9"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2016 4 12)
-    :transaction/flag :pending
-    :transaction/entries
+    :tx/date (time/local-date 2016 4 12)
+    :tx/flag :pending
+    :tx/entries
     [{:data/type :entry/posting
       :time/at (local-dt 2016 4 12)
       :entry/account ["Expenses" "Entertainment" "Alcohol"]
@@ -223,10 +236,10 @@
     apple-checking"
    {:title "Roth IRA Contribution"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2016 2 11)
-    :transaction/flag :cleared
-    :transaction/links #{"dedbeec489b8d7e36869666b8c445161"}
-    :transaction/entries
+    :tx/date (time/local-date 2016 2 11)
+    :tx/flag :cleared
+    :tx/links #{"dedbeec489b8d7e36869666b8c445161"}
+    :tx/entries
     [{:data/type :entry/posting
       :entry/account :roth-contributions
       :posting/virtual true
@@ -248,9 +261,9 @@
     lending-club                                      $22.16"
    {:title "Lending Club"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2015 3 29)
-    :transaction/flag :cleared
-    :transaction/entries
+    :tx/date (time/local-date 2015 3 29)
+    :tx/flag :cleared
+    :tx/entries
     [{:data/type :entry/posting
       :description "Principal Received"
       :entry/account :lending-club
@@ -277,9 +290,9 @@
     traditional-ira                                 -40 SCHH {$39.90} [2016-01-05] @ $40.1513  ;  $1,606.05 (short-term gain $10.05)"
    {:title "SCHH - Sell"
     :data/type :finance/transaction
-    :transaction/date (time/local-date 2016 4 22)
-    :transaction/flag :cleared
-    :transaction/entries
+    :tx/date (time/local-date 2016 4 22)
+    :tx/flag :cleared
+    :tx/entries
     [{:data/type :entry/posting
       :entry/account :traditional-ira
       :posting/amount (types/q 1606.01M 'USD)
@@ -299,4 +312,9 @@
       :posting/cost {:amount (types/q 39.90M 'USD)
                      :date (time/local-date 2016 1 5)}
       :posting/price (types/q 40.1513M 'USD)
-      :time/at (local-dt 2016 4 22)}]}))
+      :time/at (local-dt 2016 4 22)}]})
+  #_(test-parse "2016-04-22 * Paid wages
+    Expenses:Waves  3333 USD
+    Assets:Cash"
+                (assoc-in tx-expected [:tx/entries first :posting/payee] "Juan Taylor")
+                "posting payee"))
