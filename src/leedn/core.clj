@@ -1,2 +1,1 @@
-(ns leedn.leedn)
-
+(ns leedn.core)

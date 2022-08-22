@@ -1,4 +1,4 @@
-(ns leedn.leedn-test
+(ns leedn.core-test
   (:require [clojure.test :refer :all]
             [leedn.core :refer :all]))
 
