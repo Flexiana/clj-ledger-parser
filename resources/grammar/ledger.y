@@ -4,102 +4,101 @@ journal:
     ;
 
 journal_item:
-    whitespace
-    directive |
+    whitespace directive |
     xact |
     epsilon
     ;
 
 whitespace:
-    EOL |
-    WHITESPACE EOL |
-    ';' TEXT EOL |              
-    '*' TEXT EOL |
+    eol |
+    white eol |
+    ';' text eol |
+    '*' text eol |
     epsilon
     ;
 
 directive:
-    '@' word_directive EOL |
-    '!' word_directive EOL |
-    word_directive EOL |
-    char_directive EOL
+    '@' word_directive eol |
+    '!' word_directive eol |
+    word_directive eol |
+    char_directive eol
     ;
 
 word_directive:
-    "include" TEXT |
-    "account" TEXT |
+    "include" text |
+    "account" text |
     "end" |
-    "alias" STRING '=' TEXT |
-    "def" TEXT |
-    TEXT WHITESPACE TEXT        
+    "alias" string '=' text |
+    "def" text |
+    text white text
     ;
 
 char_directive:
-    'i' date time TEXT |        
-    'I' date time TEXT |
-    'o' date time TEXT |        
-    'O' date time TEXT |
-    'h' TEXT EOL |
-    'b' TEXT EOL |
-    'D' amount |                
-    'A' TEXT |                  
-    'C' commodity '=' amount |  
-    'P' date time commodity amount | 
-    'N' commodity |             
-    'Y' INT4 |                  
-    '-' '-' STRING TEXT |
+    'i' date time text |
+    'I' date time text |
+    'o' date time text |
+    'O' date time text |
+    'h' text eol |
+    'b' text eol |
+    'D' amount |
+    'A' text |
+    'C' commodity '=' amount |
+    'P' date time commodity amount |
+    'N' commodity |
+    'Y' int4 |
+    '-' '-' string text |
     epsilon
     ;
 
-date: INT4 date_sep INT2 date_sep INT2 ;
+date: int4 date_sep int2 date_sep int2 ;
 date_opt: '=' date | epsilon ;
 date_sep: '/' | '-' | '.' ;
 
-time: INT2 ':' INT2 ':' INT2 ;
+time: int2 ':' int2 ':' int2 ;
 
 commodity:
-    '"' TEXT '"' |
-    STRING ;
+    '"' text '"' |
+    string ;
 
 xact: plain_xact |
        periodic_xact |
        automated_xact ;
 
 plain_xact:
-    date date_opt status_opt code_opt FULLSTRING note_opt EOL
+    date date_opt status_opt code_opt fullstring note_opt eol
     postings ;
 
 status_opt: status | epsilon ;
 status: '*' | '!' | epsilon ;
 
 code_opt: code | epsilon ;
-code: '(' TEXT ')' ;
+code: '(' text ')' ;
 
 spacer: ' ' ' ' | '\t' | ' ' '\t' ;
 
 note_opt: spacer note | epsilon ;
-note: ';' TEXT ;
+note: ';' text ;
 
 
 
 periodic_xact:
-    '~' period_expr note_opt EOL
+    '~' period_expr note_opt eol
     posting postings ;
 
-period_expr: FULLSTRING ;
+period_expr: fullstring ;
 
 
 
 automated_xact:
-    '=' value_expr note_opt EOL
+    '=' value_expr note_opt eol
     posting postings ;
 
-value_expr: FULLSTRING ;
+value_expr: fullstring ;
 
-quantity: neg_opt BIGINT decimal_opt ;
+quantity: neg_opt bigint decimal_opt ;
 
 neg_opt: '-' | epsilon ;
-decimal_opt: '.' BIGINT | epsilon ;
+decimal_opt: '.' bigint | epsilon ;
 
 annotation: lot_price_opt lot_date_opt lot_note_opt ;
 
@@ -124,9 +123,9 @@ postings:
     ;
 
 posting:
-    WHITESPACE status_opt account values_opt note_opt EOL;
+    white status_opt account values_opt note_opt eol ;
 
-account_name: FULLSTRING ;
+account_name: fullstring ;
 
 values_opt:
     spacer amount_expr price_opt |
@@ -136,7 +135,7 @@ values_opt:
 price_opt: price | epsilon ;
 price:
     '@' amount_expr |
-    '@@' amount_expr            
+    '@@' amount_expr
     ;
 
 account:
@@ -144,14 +143,16 @@ account:
     '(' account_name ')' |
     '[' account_name ']' ;
 
-INT1: #"\d";
-INT2: #"\d{2}";
-INT4: #"\d{4}";
-BIGINT: #"\d+";
+eol: #"\n|$" ;
 
-TEXT: #".*[^\n]";
+int1: #"\d" ;
+int2: #"\d{2}" ;
+int4: #"\d{4}" ;
+bigint: #"\d+" ;
 
-WHITESPACE: #"\s+";
+text: #".*[^\n]" ;
 
-STRING: #"[\w]+[^\s\n]";
-FULLSTRING: #".*[^\n]";
+white: #"\s+" ;
+
+string: #"\w+[^\s\n]" ;
+fullstring: #".*[^\n]" ;

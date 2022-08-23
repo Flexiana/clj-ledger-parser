@@ -111,7 +111,6 @@ account Liabilities:Superannuation-Payable
 
 account Liabilities:Suspense
 
-
 2016-01-01 *  Starting balance
     Assets:BTC:Wallet1                                2.002427 BTC
     Equity:Opening
