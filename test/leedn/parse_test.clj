@@ -4,7 +4,7 @@
    [clojure.test :refer :all]
    [matcher-combinators.test]
    [finance.core.types :as types]
-   [leedn.parse :as parse]))
+   [leedn.parse :as sut]))
 
 (defn- local-dt
   "Takes the same args as `date-time`, but returns the specified time in the
