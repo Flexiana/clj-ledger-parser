@@ -102,7 +102,6 @@
    [{:data/type :entry/posting,
      :entry/account ["Expenses" "Waves"],
      :posting/amount {:value 3333M, :commodity 'USD},
-     :posting/payee "Juan Taylor",
      :time/at (local-dt 2016 4 10)}
     {:data/type :entry/posting,
      :entry/account ["Assets" "Cash"],
@@ -314,10 +313,9 @@
                      :date (time/local-date 2016 1 5)}
       :posting/price (types/q 40.1513M 'USD)
       :time/at (local-dt 2016 4 22)}]})
-  (test-parse
-   "2016-04-10 * Paid wages
+  (testing "it correctly parses posting Payee"
+    (test-parse
+     "2016-04-10 * Paid wages
     Expenses:Waves  3333 USD  ; Payee: Juan Taylor
     Assets:Cash"
-   (assoc-in tx-expected [:tx/entries 0 :posting/payee] "Juan Taylor")))
-
-
+     (assoc-in tx-expected [:tx/entries 0 :posting/payee] "Juan Taylor"))))

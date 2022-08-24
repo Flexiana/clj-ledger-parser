@@ -6,10 +6,7 @@
     [format :as ftime])
    [clojure.java.io :as io]
    [clojure.string :as str]
-   ;; [instaparse.core :as parse]
-   [finance.core.types :as types]
    [finance.ledger.parse :as p]
-   [instaparse.core :as insta]
    [instaparse.transform :as intr]
    [clojure.test :refer :all]))
 
@@ -361,7 +358,6 @@
 
 (defn interpret-parse
   [tree]
-  (def tree tree)
   (try
     (intr/transform ledger-transforms tree)
     (catch Exception e
@@ -386,12 +382,3 @@
        (line-seq)
        (p/group-lines)
        (mapcat parse-group)))
-
-(comment
-  (-> "resources/journal.dat"
-      parse-file)
-
-;-)
-  )
-
-
