@@ -30,7 +30,8 @@
 (deftest commodity-declarations
   (test-parse
    "commodity FOO"
-   {:commodity/code 'FOO})
+   {:data/type :finance/commodity
+    :commodity/code 'FOO})
   (test-parse
    "commodity $
     note United States Dollars
@@ -40,6 +41,7 @@
     nomarket
     default"
    {:title "United States Dollars"
+    :data/type :finance/commodity
     :commodity/code 'USD
     :commodity/currency-symbol "$"
     :commodity/type :commodity.type/currency
@@ -49,6 +51,7 @@
     note Vanguard Target Retirement 2050 Fund Tr II
     note type: mutual-fund"
    {:title "Vanguard Target Retirement 2050 Fund Tr II"
+    :data/type :finance/commodity
     :commodity/code 'VTR2050
     :commodity/type :commodity.type/mutual-fund})
   #_(let [source "commodity 1234"]
@@ -57,24 +60,28 @@
 (deftest price-history
   (test-parse
    "P 2004-01-01 points      $0.01"
-   {:time/at (local-dt 2004 1 1)
+   {:data/type :finance/price
+    :time/at (local-dt 2004 1 1)
     :price/commodity 'points
     :price/value (types/q 0.01M 'USD)})
   (test-parse
    "P 2016-05-20 17:05:30 TSLA      $220.28"
-   {:time/at (local-dt 2016 5 20 17 5 30)
+   {:data/type :finance/price
+    :time/at (local-dt 2016 5 20 17 5 30)
     :price/commodity 'TSLA
     :price/value (types/q 220.28M 'USD)})
   (test-parse
    "P 2015-09-10 fooberries 101.01 XYZ"
-   {:time/at (local-dt 2015 9 10)
+   {:data/type :finance/price
+    :time/at (local-dt 2015 9 10)
     :price/commodity 'fooberries
     :price/value (types/q 101.01M 'XYZ)}))
 
 (deftest account-directives
   (test-parse
    "account Equity:Capital Gains"
-   {:title "Capital Gains"
+   {:data/type :finance/account
+    :title "Capital Gains"
     :account/path ["Equity" "Capital Gains"]})
   (test-parse
    "account Assets:Cash:Big Apple Bank:Personal Checking
@@ -84,7 +91,8 @@
     note external-id: XX01-13924280
     note link: d2df7edb50a138cc753e60ce4bb0beb9
     note Personal checking account."
-   {:title "Personal Checking"
+   {:data/type :finance/account
+    :title "Personal Checking"
     :description "Personal checking account."
     :account/path ["Assets" "Cash" "Big Apple Bank" "Personal Checking"]
     :account/alias :apple-checking
@@ -319,3 +327,9 @@
     Expenses:Waves  3333 USD  ; Payee: Juan Taylor
     Assets:Cash"
      (assoc-in tx-expected [:tx/entries 0 :posting/payee] "Juan Taylor"))))
+
+(deftest parse-file-test
+  (sut/parse-file
+    "./resources/journal.dat"
+    )
+  )

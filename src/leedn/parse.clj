@@ -168,7 +168,8 @@
           (fn ->commodity
             [code & children]
             (->
-             {:commodity/code code}
+             {:commodity/code code
+              :data/type :finance/commodity}
              (collect
               {:title     (collect-one :NoteDirective)
                :data/tags (collect-map :MetaDirective)
@@ -189,7 +190,8 @@
           :CommodityPrice
           (fn ->commodity-price
             [date code price]
-            {:time/at (date->time date)
+            {:data/type :finance/price
+             :time/at (date->time date)
              :price/commodity code
              :price/value price})}))
 
@@ -202,7 +204,8 @@
    (fn ->account-definition
      [path & children]
      (->
-      {:title (last path)
+       {:data/type :finance/account
+       :title (last path)
        :account/path path}
       (collect
        {:account/alias (collect-one :AccountAliasDirective)
