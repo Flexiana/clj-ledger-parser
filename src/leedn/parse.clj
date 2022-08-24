@@ -137,8 +137,6 @@
 (defn- collect-map
   [k]
   (fn [children]
-    (def k k)
-    (def children children)
     (when-let [matches (seq (filter #(and (vector? %)
                                           (= k (first %)))
                                     children))]
