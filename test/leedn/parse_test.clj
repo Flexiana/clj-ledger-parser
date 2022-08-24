@@ -18,7 +18,7 @@
   well."
   [text & values]
   (let [text (str text "\n")]
-    (is (match? values (parse/parse-group text))
+    (is (match? values (sut/parse-group text))
         #_(doseq [entry values] ;; TODO: add malli check
             (when-let [spec (s/get-spec (:data/type entry))]
               (when-not (s/valid? spec entry)
