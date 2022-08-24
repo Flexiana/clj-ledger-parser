@@ -1,11 +1,11 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
-        ;; instaparse/instaparse {:mvn/version "1.4.12"}
-        metosin/malli {:mvn/version "0.8.9"}
-        instaparse/instaparse {:mvn/version "1.4.5"}
+        com.widdindustries/cljc.java-time {:mvn/version "0.1.21"}
         greglook/merkledag-ledger
         {:git/url "https://github.com/jehaby/merkledag-ledger"
-         :sha "f8cfe7d24dc20126c167e4bf765002dd3df8a45a"}}
+         :sha "f8cfe7d24dc20126c167e4bf765002dd3df8a45a"}
+        instaparse/instaparse {:mvn/version "1.4.12"}
+        metosin/malli {:mvn/version "0.8.9"}}
  :aliases
  {:dev
   {:extra-paths ["dev"]}
