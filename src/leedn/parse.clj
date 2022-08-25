@@ -6,10 +6,7 @@
     [format :as ftime])
    [clojure.java.io :as io]
    [clojure.string :as str]
-   ;; [instaparse.core :as parse]
-   [finance.core.types :as types]
    [finance.ledger.parse :as p]
-   [instaparse.core :as insta]
    [instaparse.transform :as intr]
    [clojure.test :refer :all]))
 
@@ -140,8 +137,6 @@
 (defn- collect-map
   [k]
   (fn [children]
-    (def k k)
-    (def children children)
     (when-let [matches (seq (filter #(and (vector? %)
                                           (= k (first %)))
                                     children))]
@@ -173,7 +168,8 @@
           (fn ->commodity
             [code & children]
             (->
-             {:commodity/code code}
+             {:commodity/code code
+              :data/type :finance/commodity}
              (collect
               {:title     (collect-one :NoteDirective)
                :data/tags (collect-map :MetaDirective)
@@ -194,7 +190,8 @@
           :CommodityPrice
           (fn ->commodity-price
             [date code price]
-            {:time/at (date->time date)
+            {:data/type :finance/price
+             :time/at (date->time date)
              :price/commodity code
              :price/value price})}))
 
@@ -207,7 +204,8 @@
    (fn ->account-definition
      [path & children]
      (->
-      {:title (last path)
+       {:data/type :finance/account
+       :title (last path)
        :account/path path}
       (collect
        {:account/alias (collect-one :AccountAliasDirective)
@@ -361,7 +359,6 @@
 
 (defn interpret-parse
   [tree]
-  (def tree tree)
   (try
     (intr/transform ledger-transforms tree)
     (catch Exception e
@@ -386,12 +383,3 @@
        (line-seq)
        (p/group-lines)
        (mapcat parse-group)))
-
-(comment
-  (-> "resources/journal.dat"
-      parse-file)
-
-;-)
-  )
-
-
