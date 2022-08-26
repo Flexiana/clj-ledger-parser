@@ -75,9 +75,9 @@
                                         ; TODO: when there are only two postings and no special costs or prices, elide the negative posting amount?
            (str/join "\n" (map render-posting postings))))))
 
-(defmethod render-entry :CommentBlock
-  [[_ text]]
-  (str "; " text))
+(defmethod render-entry :ledger/comment
+  [comment]
+  (str "; " (:comment/text comment))) ;; TODO: support different comment styles
 
 (defmethod render-entry :finance/account
   [{:account/keys [alias assertion note path]}]
@@ -101,23 +101,25 @@
 
 (comment
   (do
-    (require '[leedn.parse :as p])
+      (require '[leedn.parse :as p])
 
-    (->> (p/parse-file "./resources/journal.dat")
-         (def rr))
+      (->> (p/parse-file (io/reader "./resources/journal.dat"))
+           (def rr))
 
-    (->> rr
-         (filter #(not= :finance/account (:data/type %)))
-         (take 1)
-         (render-file) ;; TODO: find bug
+      (->> rr
+           ;; (filter #(not= :finance/account (:data/type %)))
+           ;; (take 1)
+           (render-file) ;; TODO: find bug
          ;; (spit "./spited.dat" )
-         ))
+           )
+      ;
+      )
 
-  (spit "./spited.dat" (render-file rr))
+  (spit "/tmp/spited.dat" (render-file rr))
 
   (io/delete-file "./spited.dat")
 
   (render-entry (first entries))
-  ;
+  
   )
 

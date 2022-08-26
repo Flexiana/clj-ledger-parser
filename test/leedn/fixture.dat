@@ -2,6 +2,8 @@ account Assets:BTC:Wallet1
 
 account Equity:Opening
 
+; nobody knows about it hehehe
+
 2016-01-01 *  Starting balance
     Assets:BTC:Wallet1  2.002427 BTC
     Equity:Opening

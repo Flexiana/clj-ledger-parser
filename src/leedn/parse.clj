@@ -347,10 +347,17 @@
         :item/tax-applied (collect-one :LineItemTaxApplied)}
        children)])})
 
+(def comment-transform
+  {:CommentBlock
+   (fn ->comment [text]
+     {:data/type :ledger/comment
+      :comment/text text})})
+
 (def ledger-transforms
   (merge
    p/ledger-transforms
    p/basic-transforms
+   comment-transform
    commodity-transforms
    account-transforms
    transaction-transforms))
