@@ -376,10 +376,8 @@
 
 (defn parse-file
   "Parse a single file, returning a sequence of interpreted ledger entries."
-  [file]
-  (->> file
-       (io/file)
-       (io/reader)
+  [^java.io.BufferedReader r]
+  (->> r
        (line-seq)
        (p/group-lines)
        (mapcat parse-group)))
