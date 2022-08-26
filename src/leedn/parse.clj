@@ -4,11 +4,9 @@
     [coerce :as ctime]
     [core :as time]
     [format :as ftime])
-   [clojure.java.io :as io]
    [clojure.string :as str]
    [finance.ledger.parse :as p]
-   [instaparse.transform :as intr]
-   [clojure.test :refer :all]))
+   [instaparse.transform :as intr]))
 
 (def time-format
   "Formats to accept for time values. This parses dates in the **local**
@@ -204,7 +202,7 @@
    (fn ->account-definition
      [path & children]
      (->
-       {:data/type :finance/account
+      {:data/type :finance/account
        :title (last path)
        :account/path path}
       (collect
@@ -245,15 +243,15 @@
    (fn ->transaction
      [date & children]
      (-> {:data/type :finance/transaction
-          :tx/date date}
+          :tx/date   date}
          (collect
-          {:title                       (collect-one :TxMemo)
-           :description                 (collect-all :MetaComment)
-           :time/at                     (collect-one :TimeMeta)
-           :tx/flag    (collect-one :TxFlag)
-           :tx/code    (collect-one :TxCode)
-           :tx/entries (collect-all :Posting)
-           :data/tags                   (collect-map :MetaEntry)}
+          {:title       (collect-one :TxMemo)
+           :description (collect-all :MetaComment)
+           :time/at     (collect-one :TimeMeta)
+           :tx/flag     (collect-one :TxFlag)
+           :tx/code     (collect-one :TxCode)
+           :tx/entries  (collect-all :Posting)
+           :data/tags   (collect-map :MetaEntry)}
           children)
          (join-field :description "\n")
          (update :tx/entries vec)
@@ -271,16 +269,16 @@
    :Posting
    (fn ->posting
      [account & children]
-     (let [posting-type (case (first account)
-                          :RealAccountRef :real
-                          :VirtualAccountRef :virtual
-                          :BalancedVirtualAccountRef :balanced-virtual)
+     (let [posting-type      (case (first account)
+                               :RealAccountRef            :real
+                               :VirtualAccountRef         :virtual
+                               :BalancedVirtualAccountRef :balanced-virtual)
            [amount children] (if (vector? (first children))
                                [nil children]
                                [(first children) (rest children)])]
        [:Posting
         (->
-         {:data/type :entry/posting
+         {:data/type     :entry/posting
           :entry/account (second account)}
          (assoc-some
           :posting/amount amount)
@@ -289,15 +287,15 @@
            :balance/amount     (collect-one :PostingBalance)
            :posting/price      (collect-one :PostingPrice)
            :posting/invoice    (collect-all :LineItem)
-           ::lot-cost                  (collect-one :PostingLotCost)
-           ::lot-date                  (collect-one :PostingLotDate)
-           ::date                      (collect-one :PostingDate) ;; TODO: aux date
-           :time/at                    (collect-one :TimeMeta)
-           :data/tags                  (collect-map :MetaEntry)
-           :description                (collect-all :MetaComment)}
+           ::lot-cost          (collect-one :PostingLotCost)
+           ::lot-date          (collect-one :PostingLotDate)
+           ::date              (collect-one :PostingDate) ;; TODO: aux date
+           :time/at            (collect-one :TimeMeta)
+           :data/tags          (collect-map :MetaEntry)
+           :description        (collect-all :MetaComment)}
           children)
-          ; TODO: (lift-meta :interval :time/interval ...)
-          ; Default :time/at to the start of :time/interval if missing
+                                        ; TODO: (lift-meta :interval :time/interval ...)
+                                        ; Default :time/at to the start of :time/interval if missing
          (update-time :time/at ::date)
          (dissoc ::date)
          (join-field :description "\n")
@@ -312,18 +310,18 @@
                  (update :posting/cost assoc :date (::lot-date posting))
                  (seq (:posting/invoice posting))
                  (assoc :posting/invoice
-                        {:data/type :finance/invoice
+                        {:data/type     :finance/invoice
                          :invoice/items (vec (:posting/invoice posting))})
                  (= posting-type :virtual)
                  (assoc :posting/virtual true)
-              ; Automatically detect balance-check entries.
+                                        ; Automatically detect balance-check entries.
                  (and (or (nil? (:value amount))
                           (zero? (:value amount)))
                       (= :balanced-virtual posting-type)
                       (:balance/amount posting))
                  (-> (assoc :data/type :entry/balance-check)
                      (dissoc :posting/amount))
-              ; If type is overridden and amount is zero, remove it.
+                                        ; If type is overridden and amount is zero, remove it.
                  (and (not= :entry/posting (:data/type posting))
                       (or (nil? (:value amount)) (zero? (:value amount))))
                  (dissoc :posting/amount)))
@@ -340,7 +338,7 @@
      [desc & children]
      [:LineItem
       (collect
-       {:title desc
+       {:title     desc
         :data/type :finance/item}
        {:item/total       (collect-one :LineItemTotal)
         :item/amount      (collect-one :LineItemAmount)
