@@ -5,9 +5,7 @@
     [coerce :as ctime]
     [core :as time]
     [format :as ftime])
-   [clojure.java.io :as io]
-   [clojure.string :as str]
-   [leedn.parse :as p]))
+   [clojure.string :as str]))
 
 ;; ## Rendering Functions
 
@@ -19,7 +17,6 @@
   "Renders a ledger file from a sequence of entries. Returns a string of the
   file contents."
   [entries]
-  (def entries entries)
   (str/join "\n\n" (map (comp str/trim render-entry) entries)))
 
 ;; ## Entry Rendering Methods
@@ -35,7 +32,6 @@
 
 (defn render-posting
   [posting]
-  (def posting posting)
   (let [{account :entry/account
          amount :posting/amount
          time :time/at} posting
@@ -58,7 +54,6 @@
 
 (defn render-transaction
   [tx]
-  (def tx tx)
   (let [{:tx/keys [date flag entries code time]} tx]
     (str #_(when-let [unused (not-empty (dissoc tx :parse/source :date :title :status :time :postings))]
              (str "; " (pr-str unused) "\n"))
@@ -91,35 +86,8 @@
 
 (defmethod render-entry :finance/transaction
   [tx]
-  (def tx tx)
   (render-transaction tx))
 
 (defmethod render-entry :default
   [entry]
-  (def entry entry)
   (str "; Unknown entry " (pr-str entry)))
-
-(comment
-  (do
-      (require '[leedn.parse :as p])
-
-      (->> (p/parse-file (io/reader "./resources/journal.dat"))
-           (def rr))
-
-      (->> rr
-           ;; (filter #(not= :finance/account (:data/type %)))
-           ;; (take 1)
-           (render-file) ;; TODO: find bug
-         ;; (spit "./spited.dat" )
-           )
-      ;
-      )
-
-  (spit "/tmp/spited.dat" (render-file rr))
-
-  (io/delete-file "./spited.dat")
-
-  (render-entry (first entries))
-  
-  )
-
