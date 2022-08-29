@@ -1,4 +1,4 @@
-journal:
+<journal>:
     journal_item journal |
     epsilon
     ;
@@ -10,10 +10,10 @@ journal_item:
     ;
 
 whitespace:
-    eol |
-    white eol |
-    ';' text eol |
-    '*' text eol |
+    <eol> |
+    horizontal_whitespace <eol> |
+    ';' text <eol> |
+    '*' text <eol> |
     epsilon
     ;
 
@@ -25,12 +25,12 @@ directive:
     ;
 
 word_directive:
-    "include" text |
-    "account" text |
-    "end" |
-    "alias" string '=' text |
-    "def" text |
-    text white text
+    'include' text |
+    'account' text |
+    'end' |
+    'alias' string '=' text |
+    'def' text |
+    text horizontal_whitespace text
     ;
 
 char_directive:
@@ -79,15 +79,11 @@ spacer: ' ' ' ' | '\t' | ' ' '\t' ;
 note_opt: spacer note | epsilon ;
 note: ';' text ;
 
-
-
 periodic_xact:
     '~' period_expr note_opt eol
     posting postings ;
 
 period_expr: fullstring ;
-
-
 
 automated_xact:
     '=' value_expr note_opt eol
@@ -123,7 +119,7 @@ postings:
     ;
 
 posting:
-    white status_opt account values_opt note_opt eol ;
+    horizontal_whitespace status_opt account values_opt note_opt eol ;
 
 account_name: fullstring ;
 
@@ -143,16 +139,16 @@ account:
     '(' account_name ')' |
     '[' account_name ']' ;
 
-eol: #"\n|$" ;
+<eol>: <#"\n|$"> ;
 
 int1: #"\d" ;
 int2: #"\d{2}" ;
 int4: #"\d{4}" ;
 bigint: #"\d+" ;
 
-text: #".*[^\n]" ;
+text: #"\S?[^\n]*\S" ;
 
-white: #"\s+" ;
+horizontal_whitespace: #"[ \t]"+ ;
 
-string: #"\w+[^\s\n]" ;
+string: #"\w+[^\s]" ;
 fullstring: #".*[^\n]" ;

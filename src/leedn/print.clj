@@ -106,6 +106,6 @@
          ;; (spit "./spited.dat" )
          )
 
-  (spit "./spited.dat" (render-file rr))
+    (spit "./spited.dat" (render-file rr))
 
-  (io/delete-file "./spited.dat"))
+    (io/delete-file "./spited.dat")))
