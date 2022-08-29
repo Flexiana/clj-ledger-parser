@@ -5,9 +5,7 @@
     [coerce :as ctime]
     [core :as time]
     [format :as ftime])
-   [clojure.java.io :as io]
-   [clojure.string :as str]
-   [leedn.parse :as p]))
+   [clojure.string :as str]))
 
 ;; ## Rendering Functions
 
@@ -19,59 +17,62 @@
   "Renders a ledger file from a sequence of entries. Returns a string of the
   file contents."
   [entries]
-  (def entries entries)
   (str/join "\n\n" (map (comp str/trim render-entry) entries)))
 
 ;; ## Entry Rendering Methods
 
 (defn render-quantity
   "Renders a financial quantity."
-  [quantity]
+  [{:keys [commodity value]}]
   ; TODO: this should allow for general format options
   ; TODO: support commas
-  (case (:commodity quantity)
-    USD (format "$%.2f" (:value quantity))
-    (format "%.3f %s" (:value quantity) (:commodity quantity))))
+  (case commodity
+    USD (format "$%.2f" value)
+    (format "%.6f %s" value commodity)))
 
 (defn render-posting
   [posting]
-  (let [account-name (if (vector? (:account posting))
-                       (str/join ":" (:account posting))
-                       (name (:account posting)))
-        unused (dissoc posting :account)]
+  (let [{account :entry/account
+         amount :posting/amount
+         time :time/at} posting
+        account-name (if (vector? account)
+                       (str/join ":" account)
+                       (name account))
+        _unused (dissoc posting :account)]
     (str
-     (if-let [amount (:amount posting)]
-       (format "    %-45s %20s" account-name (render-quantity amount))
+     (if amount
+       (format "    %s  %s" account-name (render-quantity amount))
        (format "    %s" account-name))
       ; TODO: lot cost, lot date, price, balance
-     (when-let [time (:time posting)]
-       (str "\n        ; time: " time))
+     #_(when time
+         (str "\n        ; time: " time))
       ; TODO: items
      (when-let [sources (seq (:sources posting))]
        (str/join (map #(str "\n        ; source: " (name (:source %)) "|" (:line %)) sources)))
-     (when-let [unused (not-empty (dissoc posting :account :amount :time :sources))]
-       (str "\n        ; unused: " (pr-str unused))))))
+     #_(when-let [unused (not-empty (dissoc posting :account :amount :time :sources))]
+         (str "\n        ; unused: " (pr-str unused))))))
 
 (defn render-transaction
   [tx]
-  (str (when-let [unused (not-empty (dissoc tx :parse/source :date :title :status :time :postings))]
-         (str "; " (pr-str unused) "\n"))
-       (:date tx)
-       (case (:status tx) :cleared " *" :pending " !" nil)
-       (when-let [code (:code tx)]
-         (str " (" code ")"))
-       " " (:title tx) "\n"
-       (when-let [time (:time tx)]
-         (str "    ; time: " time "\n"))
-       ; meta
-       ; comments
-       (when-let [postings (seq (:postings tx))]
-         ; TODO: when there are only two postings and no special costs or prices, elide the negative posting amount?
-         (str/join "\n" (map render-posting postings)))))
+  (let [{:tx/keys [date flag entries code time]} tx]
+    (str #_(when-let [unused (not-empty (dissoc tx :parse/source :date :title :status :time :postings))]
+             (str "; " (pr-str unused) "\n"))
+     date
+         (case flag :cleared " *" :pending " !" nil)
+         (when code
+           (str " (" code ")"))
+         " " (:title tx) "\n"
+         (when time
+           (str "    ; time: " time "\n"))
+                                        ; meta
+                                        ; comments
+         (when-let [postings (seq entries)]
+                                        ; TODO: when there are only two postings and no special costs or prices, elide the negative posting amount?
+           (str/join "\n" (map render-posting postings))))))
 
-(defmethod render-entry :CommentBlock
-  [[_ text]]
-  (str "; " text))
+(defmethod render-entry :ledger/comment
+  [comment]
+  (str "; " (:comment/text comment))) ;; TODO: support different comment styles
 
 (defmethod render-entry :finance/account
   [{:account/keys [alias assertion note path]}]
@@ -84,28 +85,9 @@
          (str "    note " note "\n"))))
 
 (defmethod render-entry :finance/transaction
-  [[_ tx]]
+  [tx]
   (render-transaction tx))
 
 (defmethod render-entry :default
   [entry]
-  (def entry entry)
   (str "; Unknown entry " (pr-str entry)))
-
-(comment
-  (do
-    (require '[leedn.parse :as p])
-
-    (->> (p/parse-file "./resources/journal.dat")
-         (def rr))
-
-    (->> rr
-         (filter #(not= :finance/account (:data/type %)))
-         (take 1)
-         (render-file) ;; TODO: find bug
-         ;; (spit "./spited.dat" )
-         )
-
-    (spit "./spited.dat" (render-file rr))
-
-    (io/delete-file "./spited.dat")))

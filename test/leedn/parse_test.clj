@@ -327,9 +327,3 @@
     Expenses:Waves  3333 USD  ; Payee: Juan Taylor
     Assets:Cash"
      (assoc-in tx-expected [:tx/entries 0 :posting/payee] "Juan Taylor"))))
-
-(deftest parse-file-test
-  (sut/parse-file
-    "./resources/journal.dat"
-    )
-  )
