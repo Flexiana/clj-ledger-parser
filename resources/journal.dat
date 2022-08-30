@@ -1,0 +1,119 @@
+account Assets:BTC:Wallet1
+
+account Assets:BTC:Wallet2
+
+account Equity:Opening
+
+account Equity:Conversion
+
+account Assets:Inventory
+
+account Assets:Accounts-Receivable
+
+account Assets:BTC
+
+account Assets:BankAccount
+    assert commodity == "USD" | commodity == "EUR"
+
+account Assets:Bitcoin-asset-account
+
+account Assets:Computer-Equipment
+
+account Assets:Less-Accumulated-Depreciation-on-Computer-Equipment
+
+account Assets:Less-Accumulated-Depreciation-on-Office-Equipment
+
+account Assets:Office-Equipment
+
+account Assets:Prepayments
+
+account Equity:Owner-A-Share-Capital
+
+account Expenses:Advertising
+
+account Expenses:Bank-Fees
+
+account Expenses:Cleaning
+
+account Expenses:Consulting-and-Accounting
+
+account Expenses:Depreciation
+
+account Expenses:Employee-wages
+    assert commodity == "BTC"
+
+account Expenses:Entertainment
+
+account Expenses:Freight-and-Courier
+
+account Expenses:General-Expenses
+
+account Expenses:Human-relations-and-management
+
+account Expenses:Income-Tax-Expense
+
+account Expenses:Insurance
+
+account Expenses:Interest-Expense
+
+account Expenses:Legal-expenses
+
+account Expenses:Motor-Vehicle-Expenses
+
+account Expenses:Office-Expenses
+
+account Expenses:Printing-and-Stationery
+
+account Expenses:Realized-Gains-and-Losses
+    assert commodity == "BTC"
+
+account Expenses:Rent
+
+account Expenses:Repairs-and-Maintenance
+
+account Expenses:Sales-Tax
+
+account Expenses:Software-development-services
+
+account Expenses:Subscriptions
+
+account Expenses:Superannuation
+
+account Expenses:Telephone-and-Internet
+
+account Expenses:Transaction-fees
+    assert commodity == "BTC"
+
+account Expenses:Travel---International
+
+account Expenses:Travel---National
+
+account Expenses:Wages-and-Salaries
+
+account Income:Interest-Income
+
+account Income:Other-Revenue
+
+account Income:Sales
+
+account Liabilities:Wages-Payable
+
+account Liabilities:Employee-Tax-Payable
+
+account Liabilities:Income-Tax-Payable
+
+account Liabilities:Owner-A-Drawings
+
+account Liabilities:Owner-A-Funds-Introduced
+
+account Liabilities:Superannuation-Payable
+
+account Liabilities:Suspense
+
+2016-01-01 *  Starting balance
+    Assets:BTC:Wallet1                                2.002427 BTC
+    Equity:Opening
+
+2017-01-01 * Starting balance
+    Assets:BTC:Wallet1                                1.083700 BTC
+    Equity:Opening
