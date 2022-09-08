@@ -61,8 +61,8 @@ commodity:
     string ;
 
 xact: plain_xact |
-       periodic_xact |
-       automated_xact ;
+      periodic_xact |
+      automated_xact ;
 
 plain_xact:
     date date_opt status_opt code_opt fullstring note_opt eol
